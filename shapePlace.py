@@ -143,7 +143,7 @@ def tagging(tags):
       logtext.see("end")
       logtext.configure(state='disabled')
 
-    elif max(count_tag(taglist, "color"), count_tag(taglist, "figure")) == 1:
+    elif max(count_tag(taglist, "color"), count_tag(taglist, "figure")) == 1 and not (count_tag(taglist, "color") == 0 and count_tag(taglist, "figure") == 0):
       _color = None
       _figure = None
       _position = []
@@ -442,7 +442,7 @@ def new_input(s):
 
 
 def buttonClicked(event):
-  global possibility
+  global possibility, stuck, resetCheck
   s = textinput.get()
   if s and not stuck:
     textinput.delete(0, "end")
@@ -497,6 +497,7 @@ def buttonClicked(event):
               small_label[i][j].place_forget()
 
     elif len(possibility) == 1:
+      _check = True
       for i in range(9):
         for _s in small_label[i]:
           _s.place_forget()
@@ -508,21 +509,81 @@ def buttonClicked(event):
           f = "none"
         label[i+9].configure(image=big_images[f][c])
 
+        if not (possibility[0][i].color == target[i][0] and possibility[0][i].figure == target[i][1]):
+          _check = False
+
+      if _check:
+        logtext.configure(state='normal')
+        logtext.insert("end", "배치가 완벽하게 일치합니다.")
+        logtext.see("end")
+        logtext.configure(state='disabled')
+        messagebox.showinfo(title="성공", message="배치가 완벽하게 일치합니다.")
+        stuck = True
+
     elif resetCheck:
       logtext.configure(state='normal')
       logtext.insert("end", "[Error]: 불가능한 조건입니다. 더이상 진행할 수 없습니다. 초기화 후 다시 시도하세요.\n")
       logtext.see("end")
       logtext.configure(state='disabled')
+      messagebox.showwarning(title="실패", message="불가능한 조건입니다. 더이상 진행할 수 없습니다. 초기화 후 다시 시도하세요.")
       stuck = True
 
 
+def initValue():
+  global possibility, negatives, resetCheck, stuck
+  possibility = []
+  negatives = []
+
+  resetCheck = False
+  stuck = False
 
 
-possibility = []
-negatives = []
+def randomTarget():
+  num = random.randrange(3, 8)
+  target = [(None, None), (None, None), (None, None), (None, None), (None, None), (None, None), (None, None),
+            (None, None), (None, None)]
+  for i in range(num):
+    while (True):
+      f = figure_data[random.randrange(1, len(figure_data))]
+      c = color_data[random.randrange(1, len(color_data))]
+      if (c, f) not in target:
+        j = random.randrange(0, 9)
+        if target[j] == (None, None):
+          target[j] = (c, f)
+          break
 
-resetCheck = False
-stuck = False
+  return target
+
+def reset():
+  initValue()
+
+  target = randomTarget()
+  for i in range(9):
+    c = target[i][0]
+    if c == None:
+      c = "none"
+    f = target[i][1]
+    if f == None:
+      f = "none"
+    label[i].config(image=big_images[f][c])
+    label[i].place(x=48 + 96 * (i % 3), y=48 + 96 * (i // 3))
+
+  retry()
+
+
+def retry():
+  initValue()
+  logtext.configure(state='normal')
+  logtext.delete(1.0, "end")
+  logtext.configure(state='disabled')
+  for i in range(9):
+    label[i+9].configure(image=big_images["none"]["none"])
+    for j in range(9):
+      small_label[i][j].place_forget()
+
+
+# main
+initValue()
 
 window = Tk()
 
@@ -550,15 +611,16 @@ for f in figure_data:
   big_images[f] = _big
   small_images[f] = _small
 
+target = randomTarget()
+
 for i in range(18):
   if i < 9:
-    f = figure_data[random.randrange(0, 4)]
-    if f == None:
-      f = "none"
-    c = color_data[random.randrange(0, 9)]
+    c = target[i][0]
     if c == None:
       c = "none"
-
+    f = target[i][1]
+    if f == None:
+      f = "none"
     label.append(Label(window, image=big_images[f][c]))
     label[i].place(x=48 + 96 * (i % 3), y=48 + 96 * (i // 3))
   else:
@@ -583,6 +645,14 @@ for i in range(18):
   logtext = scrolledtext.ScrolledText(window, width=80, height=10)
   logtext.place(x=80, y=400)
   logtext.configure(state='disabled')
+
+  menubar = Menu(window)
+  menu_1 = Menu(menubar, tearoff = 0)
+  menu_1.add_command(label="리셋", command=reset)
+  menu_1.add_command(label="재시도", command=retry)
+  menubar.add_cascade(label="초기화", menu=menu_1)
+
+  window.config(menu = menubar)
 
 window.mainloop()
 
