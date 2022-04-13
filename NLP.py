@@ -19,6 +19,7 @@ class Slot:
     figure:str = None
     color:str = None
 
+
 def count_tag(tags, obj):
   val = 0
   for tag in tags:
@@ -26,11 +27,13 @@ def count_tag(tags, obj):
       val += 1
   return val
 
+
 def create_grid():
   grid = []
   for i in range(9):
     grid.append(Slot())
   return grid
+
 
 def add_case(cases, case):
   for i in range(len(case)):
@@ -42,6 +45,151 @@ def add_case(cases, case):
       return False
   cases.append(case)
   return True
+
+
+def arrange(inputs, possibility):
+  for log in inputs:
+    newcase = []
+    if log[1] == []:
+      if len(possibility) == 0:
+        for i in range(9):
+          grid = create_grid()
+          grid[i].color = log[0][0]
+          grid[i].figure = log[0][1]
+          add_case(newcase, grid)
+      else:
+        for case in possibility:
+          for i in range(9):
+            if (case[i].color == None or log[0][0] == None or case[i].color == log[0][0]) and (
+                    case[i].figure == None or log[0][1] == None or case[i].figure == log[0][1]):
+              grid = copy.deepcopy(case)
+              if log[0][0] != None:
+                grid[i].color = log[0][0]
+              if log[0][1] != None:
+                grid[i].figure = log[0][1]
+              add_case(newcase, grid)
+
+    elif log[2] == [None, None]:
+      _position = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+      if "up" in log[1]:
+        _position = [i for i in _position if i in [0, 1, 2]]
+      if "down" in log[1]:
+        _position = [i for i in _position if i in [6, 7, 8]]
+      if "left" in log[1]:
+        _position = [i for i in _position if i in [0, 3, 6]]
+      if "right" in log[1]:
+        _position = [i for i in _position if i in [2, 5, 8]]
+      if "center" in log[1]:
+        if len(log[1]) == 1:
+          _position = [4]
+        else:
+          _position = [i for i in _position if i not in [0, 2, 6, 8]]
+
+      if len(possibility) == 0:
+        for i in _position:
+          grid = create_grid()
+          grid[i].color = log[0][0]
+          grid[i].figure = log[0][1]
+          add_case(newcase, grid)
+      else:
+        for case in possibility:
+          for i in _position:
+            if (case[i].color == None or log[0][0] == None or case[i].color == log[0][0]) and (
+                    case[i].figure == None or log[0][1] == None or case[i].figure == log[0][1]):
+              grid = copy.deepcopy(case)
+              if log[0][0] != None:
+                grid[i].color = log[0][0]
+              if log[0][1] != None:
+                grid[i].figure = log[0][1]
+              add_case(newcase, grid)
+    else:
+      _position = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+      if "up" in log[1]:
+        _position = [i for i in _position if i not in [0, 1, 2]]
+      if "down" in log[1]:
+        _position = [i for i in _position if i not in [6, 7, 8]]
+      if "left" in log[1]:
+        _position = [i for i in _position if i not in [0, 3, 6]]
+      if "right" in log[1]:
+        _position = [i for i in _position if i not in [2, 5, 8]]
+
+      if len(possibility) == 0:
+        for i in _position:
+          grid = create_grid()
+          grid[i].color = log[2][0]
+          grid[i].figure = log[2][1]
+          _subposition = []
+          if "up" in log[1]:
+            k = i - 3
+            while k >= 0:
+              _subposition.append(k)
+              k -= 3
+          if "down" in log[1]:
+            k = i + 3
+            while k < 9:
+              _subposition.append(k)
+              k += 3
+          if "left" in log[1]:
+            k = i - 1
+            while k % 3 != 2:
+              _subposition.append(k)
+              k -= 1
+          if "right" in log[1]:
+            k = i + 1
+            while k % 3 != 0:
+              _subposition.append(k)
+              k += 1
+          for j in _subposition:
+            grid2 = copy.deepcopy(grid)
+            grid2[j].color = log[0][0]
+            grid2[j].figure = log[0][1]
+            add_case(newcase, grid2)
+      else:
+        for case in possibility:
+          for i in _position:
+            if (case[i].color == None or log[2][0] == None or case[i].color == log[2][0]) and (
+                    case[i].figure == None or log[2][1] == None or case[i].figure == log[2][1]):
+              grid = copy.deepcopy(case)
+              if log[2][0] != None:
+                grid[i].color = log[2][0]
+              if log[2][1] != None:
+                grid[i].figure = log[2][1]
+
+              _subposition = []
+              if "up" in log[1]:
+                k = i - 3
+                while k >= 0:
+                  _subposition.append(k)
+                  k -= 3
+              if "down" in log[1]:
+                k = i + 3
+                while k < 9:
+                  _subposition.append(k)
+                  k += 3
+              if "left" in log[1]:
+                k = i - 1
+                while k % 3 != 2:
+                  _subposition.append(k)
+                  k -= 1
+              if "right" in log[1]:
+                k = i + 1
+                while k % 3 != 0:
+                  _subposition.append(k)
+                  k += 1
+              for j in _subposition:
+                if (grid[j].color == None or log[0][0] == None or grid[j].color == log[0][0]) and (
+                        grid[j].figure == None or log[0][1] == None or grid[j].figure == log[0][1]):
+                  grid2 = copy.deepcopy(grid)
+                  if log[0][0] != None:
+                    grid2[j].color = log[0][0]
+                  if log[0][1] != None:
+                    grid2[j].figure = log[0][1]
+                  add_case(newcase, grid2)
+
+    possibility = newcase
+
+  return possibility
+
 
 inputs = []
 
@@ -145,143 +293,8 @@ for taglist in sliced_tags:
 
 print(inputs)
 
-possibility = []
+arrange(inputs, [])
 
-for log in inputs:
-  newcase = []
-  if log[1] == []:
-    if len(possibility) == 0:
-      for i in range(9):
-        grid = create_grid()
-        grid[i].color = log[0][0]
-        grid[i].figure = log[0][1]
-        add_case(newcase, grid)
-    else:
-      for case in possibility:
-        for i in range(9):
-          if (case[i].color == None or log[0][0] == None or case[i].color == log[0][0]) and (case[i].figure == None or log[0][1] == None or case[i].figure == log[0][1]):
-            grid = copy.deepcopy(case)
-            if log[0][0] != None:
-              grid[i].color = log[0][0]
-            if log[0][1] != None:
-              grid[i].figure = log[0][1]
-            add_case(newcase, grid)
-          
-  elif log[2] == [None, None]:
-    _position = [0,1,2,3,4,5,6,7,8]
-    if "up" in log[1]:
-      _position = [i for i in _position if i in [0,1,2]]
-    if "down" in log[1]:
-      _position = [i for i in _position if i in [6,7,8]]
-    if "left" in log[1]:
-      _position = [i for i in _position if i in [0,3,6]]
-    if "right" in log[1]:
-      _position = [i for i in _position if i in [2,5,8]]
-    if "center" in log[1]:
-      if len(log[1])==1:
-        _position = [4]
-      else:
-        _position = [i for i in _position if i not in [0,2,6,8]]
-    
-    if len(possibility) == 0:
-      for i in _position:
-        grid = create_grid()
-        grid[i].color = log[0][0]
-        grid[i].figure = log[0][1]
-        add_case(newcase, grid)
-    else:
-      for case in possibility:
-        for i in _position:
-          if (case[i].color == None or log[0][0] == None or case[i].color == log[0][0]) and (case[i].figure == None or log[0][1] == None or case[i].figure == log[0][1]):
-            grid = copy.deepcopy(case)
-            if log[0][0] != None:
-              grid[i].color = log[0][0]
-            if log[0][1] != None:
-              grid[i].figure = log[0][1]
-            add_case(newcase, grid)
-  else:
-    _position = [0,1,2,3,4,5,6,7,8]
-    if "up" in log[1]:
-      _position = [i for i in _position if i not in [0,1,2]]
-    if "down" in log[1]:
-      _position = [i for i in _position if i not in [6,7,8]]
-    if "left" in log[1]:
-      _position = [i for i in _position if i not in [0,3,6]]
-    if "right" in log[1]:
-      _position = [i for i in _position if i not in [2,5,8]]
-
-    if len(possibility) == 0:
-        for i in _position:
-          grid = create_grid()
-          grid[i].color = log[2][0]
-          grid[i].figure = log[2][1]
-          _subposition = []
-          if "up" in log[1]:
-            k = i-3
-            while k>=0:
-              _subposition.append(k)
-              k -= 3
-          if "down" in log[1]:
-            k = i+3
-            while k<9:
-              _subposition.append(k)
-              k += 3
-          if "left" in log[1]:
-            k = i-1
-            while k%3!=2:
-              _subposition.append(k)
-              k -= 1
-          if "right" in log[1]:
-            k = i+1
-            while k%3!=0:
-              _subposition.append(k)
-              k += 1
-          for j in _subposition:
-            grid2 = copy.deepcopy(grid)
-            grid2[j].color = log[0][0]
-            grid2[j].figure = log[0][1]
-            add_case(newcase, grid2)
-    else:
-      for case in possibility:
-        for i in _position:
-          if (case[i].color == None or log[2][0] == None or case[i].color == log[2][0]) and (case[i].figure == None or log[2][1] == None or case[i].figure == log[2][1]):
-            grid = copy.deepcopy(case)
-            if log[2][0] != None:
-              grid[i].color = log[2][0]
-            if log[2][1] != None:
-              grid[i].figure = log[2][1]
-            
-            _subposition = []
-            if "up" in log[1]:
-              k = i-3
-              while k>=0:
-                _subposition.append(k)
-                k -= 3
-            if "down" in log[1]:
-              k = i+3
-              while k<9:
-                _subposition.append(k)
-                k += 3
-            if "left" in log[1]:
-              k = i-1
-              while k%3!=2:
-                _subposition.append(k)
-                k -= 1
-            if "right" in log[1]:
-              k = i+1
-              while k%3!=0:
-                _subposition.append(k)
-                k += 1
-            for j in _subposition:
-              if (grid[j].color == None or log[0][0] == None or grid[j].color == log[0][0]) and (grid[j].figure == None or log[0][1] == None or grid[j].figure == log[0][1]):
-                grid2 = copy.deepcopy(grid)
-                if log[0][0] != None:
-                  grid2[j].color = log[0][0]
-                if log[0][1] != None:
-                  grid2[j].figure = log[0][1]
-                add_case(newcase, grid2)
-
-  possibility = newcase
 
 
 for case in possibility:
